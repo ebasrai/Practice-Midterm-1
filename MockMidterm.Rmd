@@ -1,0 +1,91 @@
+---
+title: "MockMidterm"
+author: "Ebrahim Basrai"
+date: "2025-03-03"
+output: html_document
+---
+
+```
+knitr::opts_chunk$set(echo = TRUE)
+```{r}
+suppressPackageStartupMessages({
+library(fpp)
+library(fpp2)
+library(TTR)
+})
+
+data("arrivals")
+ts <- arrivals[,4]
+plot(ts)
+### The trend of arrivals from US to Austrailia has a positive trend. But has been leveling off in recent years. 
+
+summary(ts)
+boxplot(ts)
+
+###The minimum is about 24 and the maximum around 136. With the average and median at around 85. The data spread is wide but has no outliers. 
+
+decomp <- decompose(ts, type = "additive")  
+plot(decomp)  
+
+stl_decomp <- stl(ts, s.window = "periodic")
+plot(stl_decomp)
+
+### The timeseries appears to be seasonal. The timeseries is additive because of clear seasonality. 
+
+
+seasonal_indices <- decomp$seasonal[1:12]  
+print(seasonal_indices)
+###September has the highest indice while Feb, June, October have the lowest
+### September could be because its start of the school year. June because it is American summer and Feb and Ocotober because it is start and end of the year respectively 
+
+seasonally_adjusted <- ts - decomp$seasonal
+
+plot(seasonally_adjusted)
+lines(ts, col ="red")
+
+### There is clear flcutation in seasonality which are taken away when subtracting seasonality. The data becomes smoother without seasonality. 
+
+
+naive_forecast <- naive(ts)
+plot(naive_forecast)
+
+residuals <- residuals(naive_forecast)
+plot(residuals)
+
+hist(residuals)
+### The plot of residuals shows us that the data is right skewed. The bulk of the data is within -10,10. There are outliers that are pretty large relative to the data set. 
+
+fitted_values <- fitted(naive_forecast)
+
+plot(as.numeric(naive_forecast$residuals),as.numeric(naive_forecast$fitted),  xlab = "Fitted Values", ylab = "Residuals")
+
+plot(as.numeric(naive_forecast$residuals),as.numeric(ts),  xlab = "Fitted Values", ylab = "Residuals")
+
+acf(na.omit(residuals))
+
+###This ACF graph shows a postive trend line but with strong seasonality. 
+
+accuracy(naive_forecast)
+
+
+forecasted_values <- naive(ts, h = 12)
+plot(forecasted_values)
+
+forecast_table <- data.frame(
+  Date = time(naive_forecast$mean),
+  Forecast = naive_forecast$mean
+)
+print(forecast_table)
+
+###The naive forecast has a very wide range for the next period which makes the naive model a weak forecasting model. 
+
+### accuracy(naive_forecast) same used for finding accuracy of naive model
+### The prediction i sthat the nexet year will be 106.54
+
+
+
+
+
+```
+```
+
